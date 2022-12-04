@@ -1,47 +1,81 @@
+#define functions
+def read_template(str):
+    """
+    Reads the file and return it
+    """
+    file = open(str, "r")
+    read = file.read()
+    file.close()
+    return read.strip()
 
-print(""""
-Welcome to Mad Libs
-Lets Play a game
-Type in two adjectives and one noun
-A Madlib response will be displayed.
+def parse_template(str):
+    """
+    Parse the template and return a tuple
+    """
+    final_string = ""
+    final_list = []
+    capturing = False
+    captured_word = ""
+    for x in str:
+        if capturing:
+            if x == "}":
+                capturing = False
+                final_list.append(captured_word)
+                captured_word = ""
+                final_string += x
+            else:
+                captured_word += x
 
-**An adjective denotes a descriptive word that illustrates the noun used in a sentence.
-**A noun is a word that connotes a particular name, place, idea, or object.
-      """)
-
-
-def read_template(path):
-    try:
-        with open(path,'r') as story:
-            return story.read()
-    except FileNotFoundError:
-        raise FileNotFoundError
-
-
-def parse_template(my_str):
-    stripped = ''
-    parts = []
-    capture = False
-    current = ''
-
-    for char in my_str:
-        if char == '{':
-            stripped += char
-            capture = True
-            current = ''
-        elif char == '}':
-            stripped += char
-            capture = False
-            parts.append(current)
-        elif capture:
-            current += char
         else:
-            stripped += char
+            final_string += x
+            if x == "{":
+                capturing = True
 
-    return stripped, tuple(parts)
+    return final_string, tuple(final_list)
 
+def merge(str, tup):
+    """
+    Merge the template with the user input
+    """
+    return str.format(*tup)
 
-def merge(string, user_input):
-    merge_output = string.format(*user_input)
-    return merge_output
+#create program
+print("""
+*************************************
+**      Welcome to Mad Lib         **
+**  *****************************  **
+**  You will be prompted to enter  **
+**  different parts of speech.     **
+**  Your answers will be used to   **
+**  complete sentences and then    **
+**  display them once they are     **
+**  complete. This will usually    **
+**  create some silly results.     **
+**  *****************************  **
+**           Have fun!             **
+*************************************
+""")
 
+filepath = "assets/story.txt"
+
+stripped, parts = parse_template(read_template(filepath))
+
+responses = []
+for x in parts:
+    if x.lower() == "adjective":
+        print(f"Enter an {x}")
+        response = input("> ")
+        responses.append(response)
+
+    else:
+        print(f"Enter a {x}")
+        response = input("> ")
+        responses.append(response)
+
+answer = merge(stripped, tuple(responses))
+print(answer)
+
+#write answer to new file
+f = open("assets/response.txt", "w")
+f.write(answer)
+f.close()
